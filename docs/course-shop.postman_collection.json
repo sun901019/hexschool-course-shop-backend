@@ -1,18 +1,18 @@
 {
   "info": {
     "name": "六角課程｜辦公室小物電商 API",
-    "description": "先依後端 README 啟動隔離 PostgreSQL 並 seed。兩組角色與密碼由本機或審核環境私下提供。依序執行商品、會員、購物車及管理員資料夾。管理員資料夾只操作本次建立的示範商品。",
+    "description": "使用課程公開 API。兩組角色與密碼由交件人私下提供。依序執行商品、會員、購物車及管理員資料夾。管理員資料夾只操作本次建立的示範商品。若要使用本機，請依 README 啟動課程 PostgreSQL、匯入示範資料，再把兩個網址變數一起改成本機。",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://127.0.0.1:4411/api/v1",
+      "value": "https://hexschool-course-shop-backend.vercel.app/api/v1",
       "type": "string"
     },
     {
       "key": "reviewWriteBaseUrl",
-      "value": "http://127.0.0.1:4411/api/v1",
+      "value": "https://hexschool-course-shop-backend.vercel.app/api/v1",
       "type": "string"
     },
     {

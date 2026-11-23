@@ -1,10 +1,10 @@
 # 課程 API
 
-本機根網址 `http://127.0.0.1:4411/api/v1`。以下路徑均接在根網址之後。JSON 寫入需給 `Content-Type: application/json` 及 `X-Requested-With: XMLHttpRequest`，登出與 DELETE 無請求內容時只需後一個標頭。錯誤格式為 `{"error":{"code":"代碼","message":"說明"}}`。
+公開審核根網址 `https://hexschool-course-shop-backend.vercel.app/api/v1`。本機根網址 `http://127.0.0.1:4411/api/v1`。以下路徑均接在根網址之後。JSON 寫入需給 `Content-Type: application/json` 及 `X-Requested-With: XMLHttpRequest`，登出與 DELETE 無請求內容時只需後一個標頭。錯誤格式為 `{"error":{"code":"代碼","message":"說明"}}`。
 
 ## Postman 使用方式
 
-匯入同資料夾的集合。有公開課程 API 時，把 `baseUrl` 和 `reviewWriteBaseUrl` 都設成已核對的課程 API Base URL，包含 `/api/v1`。兩個值相同時，集合才會送出寫入請求。填自己的課程會員和管理員變數，依編號跑各區，保留 Cookie Jar。
+匯入同資料夾的集合。集合已填公開課程 API。若改用本機，將 `baseUrl` 和 `reviewWriteBaseUrl` 都改成本機根網址。兩個值相同時，集合才會送出寫入請求。填自己的課程會員和管理員變數，依編號跑各區，保留 Cookie Jar。
 
 ## 公開商品
 

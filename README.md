@@ -4,6 +4,12 @@ Express + TypeORM + PostgreSQL。提供商品、會員、購物車和管理商�
 
 [課程前端 Repo](https://github.com/sun901019/hexschool-course-shop-frontend)
 
+## 線上審核
+
+- 公開 API Base URL 是 `https://hexschool-course-shop-backend.vercel.app/api/v1`。[健康檢查](https://hexschool-course-shop-backend.vercel.app/api/v1/health)
+- [課程前端](https://hexschool-course-shop-frontend.vercel.app/) 使用同來源轉送。課程資料來自獨立 Neon PostgreSQL。
+- Vercel 環境用 `COURSE_DATABASE_URL` 連接課程庫，搭配 `COURSE_JWT_SECRET`、`COURSE_FRONTEND_ORIGIN` 及 `COURSE_COOKIE_SECURE=true`。用以測試的會員與管理員登入資料由交件人另交給助教。
+
 ## 本機啟動
 
 使用 Node.js 24 及 Docker Compose。資料庫由本 Repo 的 Compose 啟動，只綁本機 55442。
