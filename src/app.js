@@ -6,6 +6,7 @@ const { makeRoutes } = require('./routes');
 
 function createApp(source, config) {
   const app = express();
+  app.set('trust proxy', config.trustProxy);
   app.disable('x-powered-by');
   app.use('/api/v1', (req, res, next) => {
     res.set('Cache-Control', 'no-store');
