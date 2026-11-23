@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${COURSE_DB_NAME:?set COURSE_DB_NAME}
+      POSTGRES_USER: ${COURSE_DB_USER:?set COURSE_DB_USER}
+      POSTGRES_PASSWORD: ${COURSE_DB_PASSWORD:?set COURSE_DB_PASSWORD}
+    ports:
+      - "127.0.0.1:${COURSE_DB_PORT:-55442}:5432"
+    volumes:
+      - course_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${COURSE_DB_USER} -d ${COURSE_DB_NAME}"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  course_data:
