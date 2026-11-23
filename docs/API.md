@@ -2,6 +2,10 @@
 
 本機根網址 `http://127.0.0.1:4411/api/v1`。以下路徑均接在根網址之後。JSON 寫入需給 `Content-Type: application/json` 及 `X-Requested-With: XMLHttpRequest`，登出與 DELETE 無請求內容時只需後一個標頭。錯誤格式為 `{"error":{"code":"代碼","message":"說明"}}`。
 
+## Postman 使用方式
+
+匯入同資料夾的集合。有公開課程 API 時，把 `baseUrl` 和 `reviewWriteBaseUrl` 都設成已核對的課程 API Base URL，包含 `/api/v1`。兩個值相同時，集合才會送出寫入請求。填自己的課程會員和管理員變數，依編號跑各區，保留 Cookie Jar。
+
 ## 公開商品
 
 | 方法與路徑 | 用法 | 成功 |
