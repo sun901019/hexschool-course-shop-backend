@@ -1,0 +1,807 @@
+{
+  "info": {
+    "name": "六角課程｜辦公室小物電商 API",
+    "description": "先依後端 README 啟動隔離 PostgreSQL 並 seed。兩組角色與密碼由本機或審核環境私下提供。依序執行商品、會員、購物車及管理員資料夾。管理員資料夾只操作本次建立的示範商品。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:4411/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "reviewWriteBaseUrl",
+      "value": "http://127.0.0.1:4411/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "memberEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "memberPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "registrationEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "registrationPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "variantId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cartItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "addKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminSlug",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminDemoId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const method = pm.request.method;",
+          "const target = pm.variables.get('baseUrl');",
+          "const approved = pm.variables.get('reviewWriteBaseUrl');",
+          "if (method !== 'GET' && (!approved || target !== approved)) {",
+          "  console.warn('寫入請求只用於核對後的獨立課程 API。');",
+          "  pm.execution.skipRequest();",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 公開商品與查詢",
+      "item": [
+        {
+          "name": "健康檢查",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "讀分類",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categories",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code < 300) pm.collectionVariables.set('categoryId', pm.response.json().data.find(row => row.slug === 'desk').id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "商品第一頁",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products?page=1&limit=4",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "商品第二頁",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products?page=2&limit=4",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "按分類列商品",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products?category={{categoryId}}",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "搜尋筆記本",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products?q=%E7%AD%86%E8%A8%98%E6%9C%AC",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code < 300) pm.collectionVariables.set('productId', pm.response.json().data[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "商品明細與款式",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products/{{productId}}",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code < 300) pm.collectionVariables.set('variantId', pm.response.json().data.variants[0].id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 測試會員",
+      "item": [
+        {
+          "name": "註冊一組新的測試會員",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman 會員\",\n  \"email\": \"{{registrationEmail}}\",\n  \"password\": \"{{registrationPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const suffix = pm.variables.replaceIn('{{$guid}}');",
+                  "pm.collectionVariables.set('registrationEmail', 'postman-' + suffix + '@example.test');",
+                  "pm.collectionVariables.set('registrationPassword', suffix);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "使用 seed 的會員登入",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{memberEmail}}\",\n  \"password\": \"{{memberPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('角色為 Member', () => pm.expect(pm.response.json().data.user.role).to.equal('Member'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "讀回登入狀態",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/session",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('狀態為已登入會員', () => pm.expect(pm.response.json().data.user.role).to.equal('Member'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "會員管理權限檢核",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/products",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 購物車同步",
+      "item": [
+        {
+          "name": "讀取購物車",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/cart",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "加入一件",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/cart/items",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{addKey}}"
+              },
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variantId\": \"{{variantId}}\",\n  \"quantity\": 1\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('addKey', 'course-' + pm.variables.replaceIn('{{$guid}}'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code < 300) pm.collectionVariables.set('cartItemId', pm.response.json().data.items.find(row => row.variantId === pm.variables.get('variantId')).id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "同一操作重送",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/cart/items",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{addKey}}"
+              },
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variantId\": \"{{variantId}}\",\n  \"quantity\": 1\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "改成兩件",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/cart/items/{{cartItemId}}",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 2\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "重新讀車，驗數量",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/cart",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('數量仍為 2', () => pm.expect(pm.response.json().data.items.find(row => row.id === pm.variables.get('cartItemId')).quantity).to.equal(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "移除測試品項",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/cart/items/{{cartItemId}}",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "會員登出",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 管理員商品增改刪",
+      "item": [
+        {
+          "name": "使用 seed 的管理員登入",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('角色為 Admin', () => pm.expect(pm.response.json().data.user.role).to.equal('Admin'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "查商品清單",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/products",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "新增一件測試商品",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/products",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"課程操作示範盒\",\n  \"slug\": \"{{adminSlug}}\",\n  \"description\": \"Postman 課程測試商品。\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"variants\": [\n    {\n      \"label\": \"標準款\",\n      \"price\": 75,\n      \"stock\": 5\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('adminSlug', 'review-' + pm.variables.replaceIn('{{$guid}}'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code < 300) pm.collectionVariables.set('adminDemoId', pm.response.json().data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "讀回剛建立的商品",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/products/{{adminDemoId}}",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "更新名稱",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/admin/products/{{adminDemoId}}",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"課程操作示範盒（已編輯）\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "再讀一次確認名稱",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/products/{{adminDemoId}}",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('已更新的名稱', () => pm.expect(pm.response.json().data.name).to.include('已編輯'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "刪除本次建立的商品",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/products/{{adminDemoId}}",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "確認刪除後查不到",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/products/{{adminDemoId}}",
+            "header": []
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "管理員登出",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "header": [
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
