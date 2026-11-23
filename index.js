@@ -8,14 +8,24 @@ app.disable('x-powered-by');
 let initialized;
 
 async function initialize() {
-  const config = readConfig();
-  const source = createDataSource(config);
-  await source.initialize();
+  let step = 'configuration';
+  let source;
   try {
-    if (await source.showMigrations()) throw new Error('Run npm run db:migrate first');
+    const config = readConfig();
+    step = 'database-driver';
+    source = createDataSource(config);
+    step = 'database-connect';
+    await source.initialize();
+    step = 'database-schema';
+    if (await source.showMigrations()) {
+      throw Object.assign(new Error('Run npm run db:migrate first'), { code: 'MIGRATION_REQUIRED' });
+    }
+    step = 'express';
     return createApp(source, config);
   } catch (error) {
-    await source.destroy();
+    const configKey = step === 'configuration' ? error.message?.match(/^COURSE_[A-Z_]+/)?.[0] : undefined;
+    console.error('Course API startup failed', { step, code: error.driverError?.code || error.code || error.name, configKey });
+    if (source?.isInitialized) await source.destroy();
     throw error;
   }
 }
@@ -23,7 +33,6 @@ async function initialize() {
 app.use(async (req, res, next) => {
   initialized ??= initialize().catch(error => {
     initialized = undefined;
-    console.error('Course database startup failed', { code: error.driverError?.code || error.code || 'STARTUP' });
     throw error;
   });
   let handler;
