@@ -1,9 +1,9 @@
 function createCatalogRepository(source) {
-  function getCategories() {
+  function listCategories() {
     return source.getRepository('Category').find({ order: { name: 'ASC', id: 'ASC' } });
   }
 
-  async function list({ page, limit, keyword, categoryId }) {
+  async function listProducts({ page, limit, keyword, categoryId }) {
     const query = source.getRepository('Product').createQueryBuilder('product');
     if (categoryId) query.andWhere('product.categoryId = :categoryId', { categoryId });
     if (keyword) query.andWhere('strpos(lower(product.name), lower(:keyword)) > 0', { keyword });
@@ -44,7 +44,7 @@ function createCatalogRepository(source) {
     return source.getRepository('Product').delete({ id });
   }
 
-  return { getCategories, list, findProduct, variantsFor, categoryExists, createProduct, updateProduct, deleteProduct };
+  return { listCategories, listProducts, findProduct, variantsFor, categoryExists, createProduct, updateProduct, deleteProduct };
 }
 
 module.exports = { createCatalogRepository };

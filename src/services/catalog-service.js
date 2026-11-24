@@ -29,8 +29,8 @@ function readVariants(value) {
 function createCatalogService(source) {
   const catalog = createCatalogRepository(source);
 
-  async function publicProducts(products) {
-    const [categories, variants] = await Promise.all([catalog.getCategories(), catalog.variantsFor(products)]);
+  async function serializeProducts(products) {
+    const [categories, variants] = await Promise.all([catalog.listCategories(), catalog.variantsFor(products)]);
     const byCategory = new Map(categories.map(category => [category.id, category]));
     const byProduct = Map.groupBy(variants, variant => variant.productId);
     return products.map(product => {
@@ -50,14 +50,14 @@ function createCatalogService(source) {
     const limit = numericQuery(query.limit, 4, '每頁筆數', 20);
     const keyword = query.q === undefined ? '' : check.string(query.q, '搜尋字詞', 80, 0);
     const categoryId = query.category === undefined ? undefined : check.uuid(query.category, '分類');
-    const [products, total] = await catalog.list({ page, limit, keyword, categoryId });
-    return { data: await publicProducts(products), meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    const [products, total] = await catalog.listProducts({ page, limit, keyword, categoryId });
+    return { data: await serializeProducts(products), meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
   }
 
-  async function detail(id) {
+  async function getProduct(id) {
     const item = await catalog.findProduct(check.uuid(id, '商品編號'));
     if (!item) throw httpError(404, 'PRODUCT_NOT_FOUND', '找不到這件商品。');
-    return (await publicProducts([item]))[0];
+    return (await serializeProducts([item]))[0];
   }
 
   async function requireCategory(id) {
@@ -83,7 +83,7 @@ function createCatalogService(source) {
       categoryId: await requireCategory(check.uuid(body.categoryId, '分類')),
     };
     const variants = readVariants(body.variants);
-    return detail(await withUniqueSlug(() => catalog.createProduct(product, variants)));
+    return getProduct(await withUniqueSlug(() => catalog.createProduct(product, variants)));
   }
 
   async function updateProduct(id, body) {
@@ -97,7 +97,7 @@ function createCatalogService(source) {
     if (!Object.keys(values).length) check.invalid('請指定要修改的欄位。');
     const result = await withUniqueSlug(() => catalog.updateProduct(id, values));
     if (!result.affected) throw httpError(404, 'PRODUCT_NOT_FOUND', '找不到這件商品。');
-    return detail(id);
+    return getProduct(id);
   }
 
   async function deleteProduct(id) {
@@ -105,7 +105,7 @@ function createCatalogService(source) {
     if (!result.affected) throw httpError(404, 'PRODUCT_NOT_FOUND', '找不到這件商品。');
   }
 
-  return { categories: catalog.getCategories, listProducts, detail, createProduct, updateProduct, deleteProduct };
+  return { listCategories: catalog.listCategories, listProducts, getProduct, createProduct, updateProduct, deleteProduct };
 }
 
 module.exports = { createCatalogService };

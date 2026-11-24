@@ -8,12 +8,12 @@ const { createCatalogController } = require('../controllers/catalog-controller')
 const { createCartController } = require('../controllers/cart-controller');
 const { requireRole } = require('../middleware/require-role');
 
-function makeRoutes(source, config) {
+function createApiRouter(source, config) {
   const api = express.Router();
   const auth = createAuthService(source, config);
   const authController = createAuthController(auth);
-  const catalog = createCatalogController(createCatalogService(source));
-  const cart = createCartController(createCartService(source));
+  const catalogController = createCatalogController(createCatalogService(source));
+  const cartController = createCartController(createCartService(source));
   const member = requireRole(auth, 'Member');
   const admin = requireRole(auth, 'Admin');
   const authLimit = rateLimit({
@@ -28,25 +28,25 @@ function makeRoutes(source, config) {
     await source.getRepository('Category').count();
     res.json({ data: { status: 'ok' } });
   });
-  api.get('/categories', catalog.categories);
-  api.get('/products', catalog.list);
-  api.get('/products/:id', catalog.detail);
+  api.get('/categories', catalogController.listCategories);
+  api.get('/products', catalogController.listProducts);
+  api.get('/products/:id', catalogController.getProduct);
   api.post('/auth/register', authLimit, authController.register);
   api.post('/auth/login', authLimit, authController.login);
   api.get('/auth/session', authController.session);
   api.post('/auth/logout', authController.logout);
 
-  api.get('/cart', member, cart.get);
-  api.post('/cart/items', member, cart.add);
-  api.patch('/cart/items/:id', member, cart.setQuantity);
-  api.delete('/cart/items/:id', member, cart.remove);
+  api.get('/cart', member, cartController.getCart);
+  api.post('/cart/items', member, cartController.addItem);
+  api.patch('/cart/items/:id', member, cartController.updateItemQuantity);
+  api.delete('/cart/items/:id', member, cartController.removeItem);
 
-  api.get('/admin/products', admin, catalog.list);
-  api.post('/admin/products', admin, catalog.create);
-  api.get('/admin/products/:id', admin, catalog.detail);
-  api.patch('/admin/products/:id', admin, catalog.update);
-  api.delete('/admin/products/:id', admin, catalog.remove);
+  api.get('/admin/products', admin, catalogController.listProducts);
+  api.post('/admin/products', admin, catalogController.createProduct);
+  api.get('/admin/products/:id', admin, catalogController.getProduct);
+  api.patch('/admin/products/:id', admin, catalogController.updateProduct);
+  api.delete('/admin/products/:id', admin, catalogController.deleteProduct);
   return api;
 }
 
-module.exports = { makeRoutes };
+module.exports = { createApiRouter };

@@ -9,7 +9,7 @@ function assertAvailable(variant, quantity) {
   }
 }
 
-function requestKey(value) {
+function parseIdempotencyKey(value) {
   const key = check.string(value, '操作識別碼', 80, 8);
   if (!/^[A-Za-z0-9_.-]+$/.test(key)) check.invalid('操作識別碼格式不正確。');
   return key;
@@ -26,7 +26,7 @@ function createCartService(source) {
     return { items, totals };
   }
 
-  async function get(userId) {
+  async function getCart(userId) {
     const cart = await repo.carts(source.manager).findOneBy({ userId });
     return readCart(source.manager, cart?.id);
   }
@@ -40,11 +40,11 @@ function createCartService(source) {
     });
   }
 
-  async function add(userId, body, keyHeader) {
+  async function addItem(userId, body, keyHeader) {
     check.bodyWithKeys(body, ['variantId', 'quantity']);
     const variantId = check.uuid(body.variantId, '款式');
     const quantity = check.integer(body.quantity, 1, 99, '數量');
-    const key = requestKey(keyHeader);
+    const key = parseIdempotencyKey(keyHeader);
     return changeCart(userId, async (manager, cartId) => {
       const ledger = repo.additions(manager);
       const previous = await ledger.findOneBy({ cartId, key });
@@ -64,7 +64,7 @@ function createCartService(source) {
     });
   }
 
-  async function setQuantity(userId, id, body) {
+  async function updateItemQuantity(userId, id, body) {
     const itemId = check.uuid(id, '品項');
     check.bodyWithKeys(body, ['quantity']);
     const quantity = check.integer(body.quantity, 1, 99, '數量');
@@ -78,7 +78,7 @@ function createCartService(source) {
     });
   }
 
-  async function remove(userId, id) {
+  async function removeItem(userId, id) {
     const itemId = check.uuid(id, '品項');
     return changeCart(userId, async (manager, cartId) => {
       const result = await repo.cartItems(manager).delete({ id: itemId, cartId });
@@ -86,7 +86,7 @@ function createCartService(source) {
     });
   }
 
-  return { get, add, setQuantity, remove };
+  return { getCart, addItem, updateItemQuantity, removeItem };
 }
 
 module.exports = { createCartService };

@@ -5,3 +5,6 @@ node_modules/
 .runtime/
 coverage/
 *.log
+.vercel/
+*.env
+六角課程專用測試帳號.txt
